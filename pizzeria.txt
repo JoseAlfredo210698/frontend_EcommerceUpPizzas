@@ -1,0 +1,33 @@
+Logo UPizzas   
+
+Pizzería
+Main
+Details
+to Order (solo envios)
+Historial de Pedidos
+
+
+
+
+
+
+
+
+
+>>Main
+tres imagenes slider
+Nombre
+Ingredientes
+tamaño (chica 4 rebanadas, mediana 6 rebanadas, grande 8 rebanadas)
+precio (precio * tamaño)
+
+
+
+>>Ordenar
+Producto
+Dirección, teléfono, referencias, nombre, correo
+Cobro -  cantidad de pizzas
+Tarjeta (C/D)
+
+
+

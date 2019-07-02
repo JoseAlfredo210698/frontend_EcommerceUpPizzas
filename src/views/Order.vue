@@ -1,12 +1,12 @@
 <template>
   <div id="app">
     <v-app id="inspire">
-      <v-stepper v-model="e1">
+      <v-stepper v-model="step">
         <v-stepper-header>
-          <v-stepper-step :editable="stepEditable[0]" :complete="e1 > 1" step="1">Pizza(s)</v-stepper-step>
+          <v-stepper-step :editable="stepEditable[0]" :complete="step > 1" step="1">Pizza(s)</v-stepper-step>
           <v-divider></v-divider>
 
-          <v-stepper-step :editable="stepEditable[1]" :complete="e1 > 2" step="2">Domicilio</v-stepper-step>
+          <v-stepper-step :editable="stepEditable[1]" :complete="step > 2" step="2">Domicilio</v-stepper-step>
           <v-divider></v-divider>
 
           <v-stepper-step :editable="stepEditable[2]" step="3">Pago</v-stepper-step>
@@ -78,7 +78,7 @@
                                 >
                                   <v-icon color="grey lighten-1">expand_less</v-icon>
                                 </v-btn>
-                                <v-btn icon small>{{pizzasToOrder[indexPizza].quantity[indexOrder]}}</v-btn>
+                                <v-btn outline color="primary" icon small><h2>{{pizzasToOrder[indexPizza].quantity[indexOrder]}}</h2></v-btn>
 
                                 <v-btn
                                   class="gray"
@@ -201,7 +201,7 @@
                       </h3>
                       <div class="font-weight-light mb-2">
                         <br />
-                        <div ref="card" />
+                        <div ref="cardElement"></div>
                         <br />
                         <span v-if="message" style="color: red;">{{message}}</span>
                       </div>
@@ -251,6 +251,10 @@
 
  <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
+import axios from "axios";
+import VueAxios from "vue-axios";
+
+Vue.use(VueAxios, axios);
 
 let stripe = Stripe("pk_test_gxEfDTN4lr9YbbREgh4rj3kj00p6DMtyCC");
 let elements = stripe.elements();
@@ -264,15 +268,6 @@ let card = undefined;
 export default {
   data() {
     return {
-      dialog: false,
-
-      alertData: {
-        indexPizza: "",
-        pizzaName: "",
-        about: ""
-      },
-      stepEditable: [true, false, false],
-      valid: true,
       nameRules: [v => !!v || "Requerido"],
       emailRules: [
         v => !!v || "Requerido",
@@ -281,9 +276,10 @@ export default {
       phoneRules: [v => !!v || "Requerido"],
       referencesRules: [v => !!v || "Requerido"],
       addressRules: [v => !!v || "Requerido"],
-      total: 0.0,
       message: "",
-      e1: 0,
+      step: 0,
+      pizzas: [] as any,
+      pizzasToOrder: [] as any,
       userData: {
         name: "",
         email: "",
@@ -293,9 +289,15 @@ export default {
         token_card: "",
         type_card: ""
       },
-
-      pizzas: [] as any,
-      pizzasToOrder: [] as any,
+      total: 0.0,
+      stepEditable: [true, false, false],
+      valid: true,
+      dialog: false,
+      alertData: {
+        indexPizza: "",
+        pizzaName: "",
+        about: ""
+      },
       toasts: false,
       textToasts: ""
     };
@@ -336,12 +338,12 @@ export default {
     };
 
     card = elements.create("card", { style: style });
-    card.mount(this.$refs.card);
+    card.mount(this.$refs.cardElement);
   },
 
   methods: {
     async toPay() {
-      this.message = "";
+      this.message = "Procesando...";
       await stripe.createToken(card).then((result: any) => {
         if (result.error) {
           this.message = result.error.message;
@@ -361,7 +363,7 @@ export default {
             });
             orders.push({ pizza: order.pizza, request: sizes });
           });
-
+          this.total = parseFloat(this.total).toFixed(2);
           Vue.axios
             .post(" http://localhost:3333/order", {
               orders: orders,
@@ -376,6 +378,7 @@ export default {
                 this.textToasts = "¡Compra exitosa!";
                 this.$router.push({ name: "home" });
               }
+              this.message = "";
             });
         }
         console.log("result>", result);
@@ -398,7 +401,7 @@ export default {
       if (this.$refs.form.validate()) {
         this.snackbar = true;
         console.log("ok");
-        this.e1 = 3;
+        this.step = 3;
         this.stepEditable[2] = true;
       } else {
         console.log("error");
@@ -450,7 +453,7 @@ export default {
       this.dialog = true;
     },
     nextStep(fase) {
-      this.e1 = fase;
+      this.step = fase;
       this.stepEditable[1] = true;
     },
     toArray(array) {

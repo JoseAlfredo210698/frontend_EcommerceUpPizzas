@@ -4,8 +4,8 @@
       
       <v-toolbar-title class="headline">
         <span>
-          alfredito
-          <strong>Pizza's</strong>
+          alfredito's
+          <strong>Pizza</strong>
         </span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
